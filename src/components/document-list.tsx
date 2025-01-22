@@ -4,29 +4,42 @@ import { useEffect, useRef, useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import axios from "axios"
 import { ColorRing } from 'react-loader-spinner'
-import { Plus } from 'lucide-react'
+import { Plus, Target } from 'lucide-react'
 import { Button } from "./ui/button"
 import { toast } from "@/hooks/use-toast"
 import { Checkbox } from "./ui/checkbox"
+import { Input } from "./ui/input"
 import { useRouter } from "next/navigation"
 
 export const DocumentList = () => {
 
     const [documentList, setDocumentList] = useState<any[]>([])
-    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true)
     const [file, setFile] = useState("")
     const [fileName, setFileName] = useState("")
     const hiddenFileInput = useRef<HTMLInputElement>(null)
     const [selectedDocuments, setSelectedDocuments] = useState<any[]>([])
+    const [chatTitle, setChatTitle] = useState<string>("")
     const router = useRouter()
 
     useEffect(() => {
         getDocuments()
     }, [])
 
+    useEffect(() =>{
+        let interval = setInterval(() =>{
+            getDocuments()
+        },5000)
+
+        return () => clearInterval(interval)
+    },[documentList])
+
     const getDocuments = async () => {
         let results = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/document/list_documents`, { headers: { 'x-access-token': localStorage.getItem('token') } })
         setDocumentList(results.data.user_documents)
+        if(isFirstLoad){
+            setIsFirstLoad(false)
+        }
     }
 
     const handleFileClick = (e: any) => {
@@ -53,17 +66,31 @@ export const DocumentList = () => {
 
     const createChat = async () =>{
         try {
-            let results = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/chat/create_chat`, {selected_documents : selectedDocuments}, {headers : {'x-access-token' : localStorage.getItem('token')}})
-            console.log(results)
-            toast({
-                title: "Chat Created Successfully",
-                description : results?.data?.message
-            })
-            router.push(`/chat/${results?.data?.chat_id}`)
+            if(chatTitle != ""){
+                let results = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/chat/create_chat`, 
+                    {
+                        selected_documents : selectedDocuments,
+                        chat_title : chatTitle
+                    }, 
+                    {headers : {'x-access-token' : localStorage.getItem('token')}})
+                
+                toast({
+                    title: "Chat Created Successfully",
+                    description : results?.data?.message
+                })
+                router.push(`/chat/${results?.data?.chat_id}`)
+            }else{
+                toast({
+                    title: "Chat Creation Failed",
+                    description: "Chat Title Empty",
+                    variant : "destructive"
+                })    
+            }
         }catch(e : any){
             toast({
                 title: "Something went wrong",
-                description: e?.response?.data?.message
+                description: e?.response?.data?.message,
+                variant : "destructive"
             })
         }
     }
@@ -91,10 +118,14 @@ export const DocumentList = () => {
 
     }
 
+    const handleChatTitleInput = (e : React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setChatTitle(e?.target?.value)
+    }
+
     return (
-        <div className={isLoading ? "m-auto" : ""}>
+        <div className={isFirstLoad ? "m-auto" : ""}>
             {
-                !isLoading ?
+                !isFirstLoad ?
 
                     <div className="container grid grid-cols-3 gap-3">
                         {
@@ -116,7 +147,7 @@ export const DocumentList = () => {
                                 </Card>
                             ))
                         }
-                        {documentList.length ? <Card onClick={(e) => file == "" && handleFileClick(e)}>
+                        <Card onClick={(e) => file == "" && handleFileClick(e)}>
                             <CardHeader>
                                 <CardTitle>Add New Document</CardTitle>
                             </CardHeader>
@@ -143,7 +174,7 @@ export const DocumentList = () => {
                                     />
                                 </form>
                             </CardContent>
-                        </Card> : null}
+                        </Card>
                     </div>: <ColorRing
                         visible={true}
                         height="80"
@@ -155,10 +186,21 @@ export const DocumentList = () => {
                     />
             }
             {selectedDocuments.length ? 
-                <div className="py-4">
-                    <Button onClick={() => createChat()}>
-                        Create Chat!
-                    </Button>
+                <div className="grid grid-cols-3 gap-3 py-4">
+                    <h4>Create Chat with Selected Document: </h4>
+                    <div>
+                        <Input 
+                            type="text"
+                            name="chatTitle"
+                            placeholder="Add Chat Title Here (required)"
+                            onChange={(e) => handleChatTitleInput(e)}
+                        />
+                    </div>
+                    <div>
+                        <Button onClick={() => createChat()}>
+                            Create Chat!
+                        </Button>
+                    </div>
                 </div> : null
             }
         </div>

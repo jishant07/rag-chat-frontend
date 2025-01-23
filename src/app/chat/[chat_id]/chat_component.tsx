@@ -56,12 +56,12 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
         // Read the response as a stream of data
     };
     return (
-        <div>
+        <section>
             <form onSubmit={(e) => fetchData(e)}>
                 <Textarea placeholder="Add your query here..." onChange={(event) => handleQueryText(event)} />
                 <Button>Submit Query</Button>
             </form>
             <div dangerouslySetInnerHTML={{__html : md.render(chatData)}}>{}</div>
-        </div>
+        </section>
     )
 }

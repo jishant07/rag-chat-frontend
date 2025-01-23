@@ -76,7 +76,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const getChats = async () =>{
     setIsLoading(true)
     let result = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/chat/list_chats`, {headers : {'x-access-token' : localStorage.getItem('token')}})
-    console.log(result.data.chat_list)
     let chatData = result.data.chat_list.map((chat: any) => {
       return {
         title: chat.chat_title,

@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast"
 import { Checkbox } from "./ui/checkbox"
 import { Input } from "./ui/input"
 import { useRouter } from "next/navigation"
+import * as _ from 'underscore'
 
 export const DocumentList = () => {
 
@@ -27,11 +28,14 @@ export const DocumentList = () => {
     }, [])
 
     useEffect(() =>{
-        let interval = setInterval(() =>{
-            getDocuments()
-        },5000)
+        let anyInactive = documentList.filter((item) => { return item.is_active == false})
+        if(anyInactive.length){
+            let interval = setInterval(() =>{
+                    getDocuments()
+            },5000)
 
-        return () => clearInterval(interval)
+            return () => clearInterval(interval)
+        }
     },[documentList])
 
     const getDocuments = async () => {
@@ -102,6 +106,7 @@ export const DocumentList = () => {
         formData.append('file', file)
         try {
             let result = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/document/upload`, formData, { headers: { 'x-access-token': localStorage.getItem('token') } })
+            getDocuments()
             toast({
                 title: "File Upload Successful",
                 description: result?.data?.message

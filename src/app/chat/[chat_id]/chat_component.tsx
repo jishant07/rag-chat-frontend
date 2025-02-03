@@ -8,16 +8,13 @@ import axios from "axios"
 export default function LLMChat({ chat_id }: { chat_id: string }) {
 
     const [queryText, setQueryText] = useState<string>("")
-    const [chatData, setChatData] = useState<string>("")
-    const [chatMessages, setChatMessages] = useState([])
+    const [chatMessages, setChatMessages] = useState<any[]>([])
 
     useEffect(() =>{
         getChatMessages()
     },[])
 
     const getChatMessages = async () =>{
-        setChatData('')
-        setQueryText('')
         let result = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/chat/list_chat_messages`,
             {chat_id},
             { headers: { 'x-access-token': localStorage.getItem('token') } }
@@ -42,12 +39,23 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
             },
             { headers: { 'x-access-token': localStorage.getItem('token') } }
         )
-        console.log(results)
     }
 
     const fetchData = async (e: any) => {
-        setChatData('')
         e.preventDefault()
+        saveChatMessage("user", queryText)
+        let userMessage = {
+            message_by : "user",
+            message_text : queryText,
+            created : "TIMESTAMP"
+        }
+        let dummmyAgentMessage = {
+            message_by : "agent",
+            message_text : "",
+            created : "TIMESTAMP"
+        }
+        setChatMessages((prevState) => [...prevState, userMessage, dummmyAgentMessage])
+        setQueryText('')
         let headers = new Headers();
         headers.append("responseType", 'stream')
         headers.append("x-access-token", localStorage.getItem('token') || "")
@@ -59,20 +67,28 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
         }).then(async (response : any) =>{
             const reader = response?.body.getReader();
             const decoder = new TextDecoder("utf-8");
+            let accumulatedData = ""
 
             while (true) {
                 const { done, value } = await reader.read();
-                if (done) {
-                    saveChatMessage("user", queryText)
-                    let tempchatdata = chatData
-                    saveChatMessage("agent", tempchatdata)
-                    getChatMessages()
-                    break;
-                }
                 // Massage and parse the chunk of data
                 const chunk = decoder.decode(value);
-                setChatData((prevState) => prevState + chunk.toString())
+                if (done) {
+                    break;
+                }
+
+                accumulatedData += chunk.toString()
+                
+                setChatMessages((prevMessages) => {
+                    const updatedMessages = [...prevMessages];
+                    updatedMessages[updatedMessages.length - 1] = {
+                        ...updatedMessages[updatedMessages.length - 1],
+                        message_text: accumulatedData,
+                    };
+                    return updatedMessages;
+                });
             }
+            saveChatMessage("agent", accumulatedData)
         }).catch((err : any) =>{
             console.log(err)
         })
@@ -92,7 +108,6 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
                     })
                 }
             </div>
-            <div dangerouslySetInnerHTML={{__html : md.render(chatData)}}>{}</div>
         </section>
     )
 }

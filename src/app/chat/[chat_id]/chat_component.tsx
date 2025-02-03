@@ -10,20 +10,20 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
     const [queryText, setQueryText] = useState<string>("")
     const [chatMessages, setChatMessages] = useState<any[]>([])
 
-    useEffect(() =>{
+    useEffect(() => {
         getChatMessages()
-    },[])
+    }, [])
 
-    const getChatMessages = async () =>{
+    const getChatMessages = async () => {
         let result = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/chat/list_chat_messages`,
-            {chat_id},
+            { chat_id },
             { headers: { 'x-access-token': localStorage.getItem('token') } }
         )
         setChatMessages(result.data.chat_messages)
     }
 
     const md = markdownit({
-        html : true, 
+        html: true,
         linkify: true,
         typographer: true
     })
@@ -32,7 +32,7 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
         setQueryText(e.target.value)
     }
 
-    const saveChatMessage = async (message_by : string, message_text : string) =>{
+    const saveChatMessage = async (message_by: string, message_text: string) => {
         let results = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/chat/save_chat_message`,
             {
                 message_by, message_text, chat_id
@@ -45,14 +45,14 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
         e.preventDefault()
         saveChatMessage("user", queryText)
         let userMessage = {
-            message_by : "user",
-            message_text : queryText,
-            created : "TIMESTAMP"
+            message_by: "user",
+            message_text: queryText,
+            created: "TIMESTAMP"
         }
         let dummmyAgentMessage = {
-            message_by : "agent",
-            message_text : "",
-            created : "TIMESTAMP"
+            message_by: "agent",
+            message_text: "",
+            created: "TIMESTAMP"
         }
         setChatMessages((prevState) => [...prevState, userMessage, dummmyAgentMessage])
         setQueryText('')
@@ -64,7 +64,7 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
             method: "POST",
             body: JSON.stringify({ chat_id, query_text: queryText }),
             headers
-        }).then(async (response : any) =>{
+        }).then(async (response: any) => {
             const reader = response?.body.getReader();
             const decoder = new TextDecoder("utf-8");
             let accumulatedData = ""
@@ -78,7 +78,7 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
                 }
 
                 accumulatedData += chunk.toString()
-                
+
                 setChatMessages((prevMessages) => {
                     const updatedMessages = [...prevMessages];
                     updatedMessages[updatedMessages.length - 1] = {
@@ -89,7 +89,7 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
                 });
             }
             saveChatMessage("agent", accumulatedData)
-        }).catch((err : any) =>{
+        }).catch((err: any) => {
             console.log(err)
         })
     };
@@ -101,9 +101,9 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
             </form>
             <div>
                 {
-                    chatMessages.map((chat : any) =>{
+                    chatMessages.map((chat: any) => {
                         return (
-                            <p dangerouslySetInnerHTML={{__html : md.render(chat.message_text)}}></p>
+                            <p dangerouslySetInnerHTML={{ __html: md.render(chat.message_text) }}></p>
                         )
                     })
                 }

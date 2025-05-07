@@ -66,8 +66,8 @@ export function SignUpForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden">
-        <CardContent className="grid p-0 md:grid-cols-2">
+      <Card className="overflow-hidden border-0 bg-gray-800 text-white">
+        <CardContent className="grid border-0 p-0 md:grid-cols-2">
           <form className="p-6 md:p-8">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
@@ -110,7 +110,7 @@ export function SignUpForm({
               </div>
               <Button 
                 type="submit" 
-                className="w-full"
+                className="w-full bg-green-700"
                 onClick={(e) => handleSubmit(e)}
               >
                 Sign Up!

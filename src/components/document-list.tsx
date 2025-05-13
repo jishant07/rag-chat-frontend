@@ -40,7 +40,10 @@ export const DocumentList = () => {
     }, [documentList]);
 
     const getDocuments = async () => {
-        let results = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/document/list_documents`, { headers: { "x-access-token": localStorage.getItem("token") } });
+        let results = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/document/list_documents`,
+            { headers: { "x-access-token": localStorage.getItem("token") } }
+        );
         setDocumentList(results.data.user_documents);
         if (isFirstLoad) {
             setIsFirstLoad(false);
@@ -109,7 +112,11 @@ export const DocumentList = () => {
         let formData = new FormData();
         formData.append("file", file);
         try {
-            let result = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/document/upload`, formData, { headers: { "x-access-token": localStorage.getItem("token") } });
+            let result = await axios.post(
+                `${process.env.NEXT_PUBLIC_API_URL}/document/upload`,
+                formData,
+                { headers: { "x-access-token": localStorage.getItem("token") } }
+            );
             getDocuments();
             toast({
                 title: "File Upload Successful",
@@ -133,16 +140,29 @@ export const DocumentList = () => {
     const handleFileName = (document: string) => {
         return document.split(".").shift();
     };
+    useEffect(() => {
+        console.log("IS active", documentList);
+    });
 
     return (
         <div className={isFirstLoad ? "m-auto" : ""}>
             {!isFirstLoad ? (
                 <div className="container grid grid-cols-3 gap-3">
                     {documentList.map((document: any, index: number) => (
-                        <Card className="group bg-gray-800 border-0 text-white relative" key={document.document_id}>
+                        <Card
+                            className="group bg-gray-800 border-0 text-white relative"
+                            key={document.document_id}
+                        >
                             <CardHeader>
-                                <CardTitle className="mb-3">{handleFileName(document.name)}</CardTitle>
-                                <h1 className="text-sm pt-1 text-gray-300">type: {document.name.split(".").pop()}</h1>
+                                <CardTitle className="mb-3">
+                                    {handleFileName(document.name)}
+                                </CardTitle>
+                                <h1 className="text-sm pt-1 text-gray-300">
+                                    type: {document.name.split(".").pop()}
+                                </h1>
+                                <h1 className="text-sm pt-1 text-gray-300">
+                                    active: {document.is_active.toString()} 
+                                </h1>
                             </CardHeader>
 
                             <div className="absolute mt-2  bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -160,7 +180,10 @@ export const DocumentList = () => {
                         </Card>
                     ))}
 
-                    <Card onClick={(e) => file == "" && handleFileClick(e)} className="bg-gray-800 border-0 text-white m-0">
+                    <Card
+                        onClick={(e) => file == "" && handleFileClick(e)}
+                        className="bg-gray-800 border-0 text-white m-0"
+                    >
                         <CardContent className="flex items-center justify-center h-full m-0 p-0">
                             <div className="flex items-center justify-center">
                                 {fileName == "" ? (
@@ -173,13 +196,29 @@ export const DocumentList = () => {
                                 )}
                             </div>
                             <form>
-                                <input type="file" ref={hiddenFileInput} hidden name="file" id="file" defaultValue={file} onChange={(e) => handleFileChange(e)} />
+                                <input
+                                    type="file"
+                                    ref={hiddenFileInput}
+                                    hidden
+                                    name="file"
+                                    id="file"
+                                    defaultValue={file}
+                                    onChange={(e) => handleFileChange(e)}
+                                />
                             </form>
                         </CardContent>
                     </Card>
                 </div>
             ) : (
-                <ColorRing visible={true} height="80" width="80" ariaLabel="color-ring-loading" wrapperStyle={{}} wrapperClass="color-ring-wrapper" colors={["#e15b64", "#f47e60", "#f8b26a", "#abbd81", "#849b87"]} />
+                <ColorRing
+                    visible={true}
+                    height="80"
+                    width="80"
+                    ariaLabel="color-ring-loading"
+                    wrapperStyle={{}}
+                    wrapperClass="color-ring-wrapper"
+                    colors={["#e15b64", "#f47e60", "#f8b26a", "#abbd81", "#849b87"]}
+                />
             )}
         </div>
     );

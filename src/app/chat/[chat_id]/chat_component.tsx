@@ -99,7 +99,7 @@ export default function LLMChat({ chat_id }: { chat_id: string }) {
             <div className="flex-1 overflow-y-auto bg-gray-800 dark:bg-gray-800 p-4 rounded-md mb-4 space-y-4 shadow-inner">
                 {chatMessages.map((chat: any, index: number) => (
                     <div key={index} className={`flex ${chat.message_by === "user" ? "justify-end" : "justify-start"} items-center`}>
-                        <div className={`max-w-xs md:max-w-md p-3 items-center justify-center flex rounded-2xl shadow whitespace-pre-wrap break-words ${chat.message_by === "user" ? "bg-gray-700 text-gray-300" : "bg-gray-900 text-gray-300"} font-semibold`} dangerouslySetInnerHTML={{ __html: md.render(chat.message_text) }} />
+                        <div className={`max-w-xs md:max-w-md p-3 items-center justify-center  rounded-2xl shadow whitespace-pre-wrap break-words ${chat.message_by === "user" ? "bg-gray-700 text-gray-300" : "bg-gray-900 text-gray-300"} font-semibold`} dangerouslySetInnerHTML={{ __html: md.render(chat.message_text) }} />
                     </div>
                 ))}
             </div>

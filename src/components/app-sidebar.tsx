@@ -70,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
         <Sidebar  {...props} className="border-r-0 bg-orange-800">
             <SidebarHeader>
-                <h3>RAG Chat!</h3>
+                <h3>Promptify Chat!</h3>
                 {!isLoading ? <NavMain items={chatList} /> : <h3>Loading...</h3>}
             </SidebarHeader>
             <SidebarRail />
